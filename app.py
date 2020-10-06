@@ -40,8 +40,8 @@ def welcome():
         f"/api/v1.0/precipitation<br/>"
         f"/api/v1.0/stations<br/>"
         f"/api/v1.0/tobs<br/>"
-        f"/api/v1.0/&lt;start&gt;<br/>"
-        f"/api/v1.0/&lt;start&gt;/&lt;end&gt;"
+        f"/api/v1.0/<start><br/>"
+        f"/api/v1.0/<start>/<end>"
     )
 
 @app.route("/api/v1.0/precipitation")
@@ -86,14 +86,14 @@ def tobs():
     
     return jsonify(data)
 
-@app.route("/api/v1.0/&lt;start&gt")
+@app.route("/api/v1.0/<start>")
 def temp_start(start):
     start = dt.datetime.strptime(start,"%Y-%m-%d")
     
     session = Session(engine)
 
 
-    results = session.query(Measures.date, func.max(Measures.tobs),func.min(Measures.tobs),func.avg(Measures.tobs)).filter(Measures.date >= start).all()
+    results = session.query(func.max(Measures.tobs),func.min(Measures.tobs),func.avg(Measures.tobs)).filter(Measures.date >= start).all()
 
     session.close()
 
@@ -101,18 +101,19 @@ def temp_start(start):
     
     return jsonify(data)
 
-@app.route("/api/v1.0/&lt;start&gt;/&lt;end&gt")
+@app.route("/api/v1.0/<start>/<end>")
 def temp_start_end(start,end):
     start = dt.datetime.strptime(start,"%Y-%m-%d")
-    end = dt.datetime.strptime(start,"%Y-%m-%d")
+    end = dt.datetime.strptime(end,"%Y-%m-%d")
 
     session = Session(engine)
 
-    results = session.query(Measures.date, func.max(Measures.tobs),func.min(Measures.tobs),func.avg(Measures.tobs)).filter(Measures.date >= start).filter(Measures.date <= end).all()
+    results = session.query(func.max(Measures.tobs),func.min(Measures.tobs),func.avg(Measures.tobs)).filter(Measures.date >= start).filter(Measures.date <= end).all()
 
     session.close()
 
     data = list(np.ravel(results))
+
     
     return jsonify(data)
     
